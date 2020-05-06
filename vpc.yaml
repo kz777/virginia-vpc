@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'This template creates vpc with 2 subnets. 1 Private, 1 Public'
+Resources:
+  myVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: Virginia-Finance-app
+  PrivateSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: us-east-1a
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.0.0/24
+      Tags:
+        - Key: Name
+          Value: Virginia-PrivateSubnet-financeApp
+  PublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: us-east-1b
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Virginia-PubSubnet-financeApp
+  CustomRT:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref myVPC
+      Tags:
+        - Key: Name
+          Value: CustomRT-finance-app
+  FinanceIGW:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: Finance-IGW
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref myVPC
+      InternetGatewayId: !Ref FinanceIGW
+  RouteToIGW:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref CustomRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref FinanceIGW
+  routeTableAssocName:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref CustomRT

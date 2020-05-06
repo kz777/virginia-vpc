@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "create simple ec2"
+
+Parameters:
+  SubnetType:
+    Description: Choose subnetID
+    Type: String
+    Default: PrivateSubnet
+    AllowedValues:
+      - PublicSubnet
+      - PrivateSubnet
+
+Mappings:
+  SubnetMap:
+    us-east-1:
+      PublicSubnet:  subnet-0c03285b96207bf14
+      PrivateSubnet: subnet-06c2732cba78e26c0
+  
+Resources:
+  myEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: mda-virginia
+      SubnetId: !FindInMap [ SubnetMap, us-east-1, !Ref SubnetType ]
+      ImageId: ami-0323c3dd2da7fb37d
+      InstanceType: t2.micro
+
+      
+     
+  
