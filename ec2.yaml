@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: "create simple ec2"
-
+# Transform: AlarmMacro
 Parameters:
   SubnetType:
     Description: Choose subnetID
@@ -8,22 +8,42 @@ Parameters:
     Default: PrivateSubnet
     AllowedValues:
       - PublicSubnet
-      - PrivateSubnet
+      - PrivateSubnet 
+
+
 
 Mappings:
   SubnetMap:
     us-east-1:
-      PublicSubnet:  subnet-0c03285b96207bf14
-      PrivateSubnet: subnet-06c2732cba78e26c0
+      PublicSubnet:  subnet-0e4ef558ed6c52491 
+      PrivateSubnet: subnet-0c5f40152342d153a 
+      LinuxImg: ami-0323c3dd2da7fb37d  
+    us-east-2:
+      PublicSubnet:  subnet-034b7a57df40c0056 
+      PrivateSubnet: subnet-002740a289412ddc0  
+      LinuxImg:  ami-0f7919c33c90f5b58 
+      
   
 Resources:
   myEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      KeyName: mda-virginia
-      SubnetId: !FindInMap [ SubnetMap, us-east-1, !Ref SubnetType ]
-      ImageId: ami-0323c3dd2da7fb37d
-      InstanceType: t2.micro
+      SubnetId: !FindInMap [ SubnetMap, !Ref "AWS::Region", !Ref SubnetType ]  
+      ImageId:  !FindInMap [ SubnetMap, !Ref "AWS::Region", LinuxImg ] 
+      InstanceType: t2.micro 
+      UserData: !Base64 |
+        #!/bin/bash
+        yum update -y
+        yum install httpd -y
+        service httpd start
+        chkconfig httpd on
+        cd /var/www/html
+        echo "<html><h1>This is AsLan's Server</h1></html>" > index.html
+      
+
+
+
+
 
       
      
